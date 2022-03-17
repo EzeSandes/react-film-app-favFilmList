@@ -5,6 +5,7 @@ export const Grid = styled.ul`
   grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
   gap: 4rem 3rem;
   margin-top: 5rem;
+  list-style: none;
 `;
 
 export const FilmBox = styled.div`

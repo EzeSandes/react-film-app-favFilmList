@@ -3,9 +3,11 @@ import { Grid, FilmBox } from '../../sharedStyles';
 import { LIMIT, LOCAL_STORAGE_KEY_HORROR } from '../../config';
 
 import Card from '../../components/shared/Card';
+import Spinner from '../../components/shared/Spinner';
 
 function Horror() {
   const [horrorFilms, setHorrorFilms] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const getHorrorFilms = async () => {
     let localData = null;
@@ -22,14 +24,22 @@ function Horror() {
 
         const data = await res.json();
         const films = data.results.slice(0, LIMIT);
+
+        /*
+        // If we want to store the results to prevent repetitive loadings. Doing this we prevent to reach the limit of 100 req per day. 
+        // UNCOMMENT THIS TO ALLOW LOCAL STORAGE
+        
         localStorage.setItem(LOCAL_STORAGE_KEY_HORROR, JSON.stringify(films));
+        */
         setHorrorFilms(films);
+        setIsLoading(false);
       } catch (err) {
         console.log(err.messagge);
       }
   };
 
   useEffect(() => {
+    setIsLoading(true);
     getHorrorFilms();
   }, []);
 
@@ -37,14 +47,18 @@ function Horror() {
     <FilmBox>
       <h2>Popular Horror films and series now</h2>
       <Grid>
-        {horrorFilms.map(film => (
-          <Card
-            id={film.id}
-            title={film.title}
-            image={film.image}
-            key={film.id}
-          />
-        ))}
+        {isLoading ? (
+          <Spinner />
+        ) : (
+          horrorFilms.map(film => (
+            <Card
+              id={film.id}
+              title={film.title}
+              image={film.image}
+              key={film.id}
+            />
+          ))
+        )}
       </Grid>
     </FilmBox>
   );
