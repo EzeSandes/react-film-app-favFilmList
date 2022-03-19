@@ -6,20 +6,23 @@ import { LOCAL_STORAGE_KEY_FAVS } from '../../config';
 import Card from '../../components/shared/Card';
 
 function Favs() {
-  const [favourites, setFavourites] = useState([]);
+  const [favourites, setFavourites] = useState(getFavourites());
   const [error, setError] = useState(false);
 
-  const getFavourites = () => {
-    let data = null;
+  function getFavourites() {
+    let localData = localStorage.getItem(LOCAL_STORAGE_KEY_FAVS);
+    return localData ? JSON.parse(localData) : [];
+  }
 
-    if ((data = localStorage.getItem(LOCAL_STORAGE_KEY_FAVS)))
-      setFavourites(JSON.parse(data));
-    else setError(previousState => !previousState);
+  const deleteFavouriteHandler = id => {
+    const newFavs = favourites.filter(fav => fav.id !== id);
+    setFavourites([...newFavs]);
   };
 
   useEffect(() => {
-    getFavourites();
-  }, []);
+    localStorage.setItem(LOCAL_STORAGE_KEY_FAVS, JSON.stringify(favourites));
+    if (favourites.length === 0) setError(previousState => !previousState);
+  }, [favourites]);
 
   return (
     <FilmBox>
@@ -36,6 +39,8 @@ function Favs() {
               title={film.title}
               image={film.image}
               key={film.id}
+              favourites={favourites}
+              deleteFavouriteHandler={deleteFavouriteHandler}
             />
           ))
         )}
