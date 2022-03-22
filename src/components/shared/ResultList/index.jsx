@@ -5,7 +5,7 @@ import { LIMIT, LOCAL_STORAGE_KEY_FAVS } from '../../../config';
 import Card from '../Card';
 import Spinner from '../Spinner';
 
-function ResultList({ LOCAL_STORAGE_KEY, genre }) {
+function ResultList({ LOCAL_STORAGE_KEY, genre = '', url = '', limit = true }) {
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [favourites, setFavourites] = useState(getFavs());
@@ -30,6 +30,7 @@ function ResultList({ LOCAL_STORAGE_KEY, genre }) {
 
   /////////////////
   const getResults = async () => {
+    setIsLoading(true);
     let localData = null;
 
     // If we want to store the results to prevent repetitive loadings
@@ -38,14 +39,15 @@ function ResultList({ LOCAL_STORAGE_KEY, genre }) {
     } else
       try {
         const res = await fetch(
-          `https://imdb-api.com/API/AdvancedSearch/${
-            process.env.REACT_APP_API_KEY
-          }?title_type=tv_movie,tv_series&user_rating=8.0,&genres=${genre.toLowerCase()}`
+          url ||
+            `https://imdb-api.com/API/AdvancedSearch/${
+              process.env.REACT_APP_API_KEY
+            }?title_type=tv_movie,tv_series&user_rating=8.0,&genres=${genre.toLowerCase()}`
         );
         if (!res.ok) throw new Error(`⛔Error⛔ --> ${res.status}`);
 
         const data = await res.json();
-        const films = data.results.slice(0, LIMIT);
+        const films = limit ? data.results.slice(0, LIMIT) : data.results;
 
         // If we want to store the results to prevent repetitive loadings. Doing this we prevent to reach the limit of 100 req per day.
         // UNCOMMENT THIS TO ALLOW LOCAL STORAGE
@@ -60,7 +62,6 @@ function ResultList({ LOCAL_STORAGE_KEY, genre }) {
   };
 
   useEffect(() => {
-    setIsLoading(true);
     getResults();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -68,7 +69,11 @@ function ResultList({ LOCAL_STORAGE_KEY, genre }) {
   return (
     <FilmBox>
       <h2>
-        Popular {genre[0].toUpperCase() + genre.slice(1)} films and series now
+        {genre
+          ? `Popular ${
+              genre[0].toUpperCase() + genre.slice(1)
+            } films and series now`
+          : genre}
       </h2>
       <Grid>
         {isLoading ? (
